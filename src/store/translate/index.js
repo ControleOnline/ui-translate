@@ -33,7 +33,7 @@ export default {
         label: "language",
         list: "language/getItems",
         searchParam: "language",
-        externalFilter: true,
+        externalFilter: false,
         format: function (value) {
           return value?.language;
         },
