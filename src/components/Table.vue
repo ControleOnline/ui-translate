@@ -17,6 +17,7 @@ export default {
         externalFilters: false,
         store: "translate",
         categories: ["translate"],
+        companyParam: "people",
         add: true,
         delete: true,
         filters: true,
