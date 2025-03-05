@@ -39,13 +39,7 @@ items:[],
         format: function (value) {
           return value?.language;
         },
-        formatList: function (value) {
-          if (value)
-            return {
-              value: value["@id"].split("/").pop(),
-              label: value?.language,
-            };
-        },
+
         saveFormat: function (value) {
           return value ? "/languages/" + (value.value || value) : null;
         },
