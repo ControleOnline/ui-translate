@@ -4,7 +4,7 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import DefaultDetail from "@controleonline/ui-default/src/components/Default/Common/DefaultDetail.vue";
+import DefaultDetail from "@controleonline/ui-default/src/vue/components/Default/Common/DefaultDetail.vue";
 
 export default {
   components: { DefaultDetail },

@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import TranslateIndex from "@controleonline/ui-translate/src/components/Table";
+import TranslateIndex from "@controleonline/ui-translate/src/vue/components/Table";
 
 export default {
   components: {
