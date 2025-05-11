@@ -11,7 +11,7 @@ items:[],
     isLoading: false,
     error: "",
     violations: null,
-    totalItems: 0,
+    totalItems: 0,messages:[], message:{},
     filters: {},
     columns: [
       {
