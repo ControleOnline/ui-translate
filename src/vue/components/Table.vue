@@ -18,6 +18,9 @@ export default {
         store: "translate",
         categories: ["translate"],
         companyParam: "people",
+        savePayload: {
+          revised: true,
+        },
         add: true,
         delete: true,
         filters: true,

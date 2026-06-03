@@ -1,18 +1,21 @@
-﻿import * as actions from "@controleonline/ui-default/src/store/default/actions";
-import * as getters from "@controleonline/ui-default/src/store/default/getters";
-import mutations from "@controleonline/ui-default/src/store/default/mutations";
-import Formatter from "@controleonline/ui-common/src/utils/formatter.js";
+import * as actions from '@controleonline/ui-default/src/store/default/actions';
+import * as getters from '@controleonline/ui-default/src/store/default/getters';
+import mutations from '@controleonline/ui-default/src/store/default/mutations';
+import * as customActions from './customActions';
 
 export default {
   namespaced: true,
   state: {
- item:{},
-items:[],
-    resourceEndpoint: "translates",
+    item: {},
+    items: [],
+    resourceEndpoint: 'translates',
     isLoading: false,
-    error: "",
+    isSaving: false,
+    error: '',
     violations: null,
-    totalItems: 0,messages:[], message:{},
+    totalItems: 0,
+    messages: {},
+    message: {},
     summary: {},
     filters: {},
     columns: [
@@ -20,74 +23,76 @@ items:[],
         editable: false,
         isIdentity: true,
         sortable: true,
-        name: "id",
-        align: "left",
-        label: "id",
+        name: 'id',
+        align: 'left',
+        label: 'id',
         sum: false,
-        format: function (value) {
-          return "#" + value;
+        format(value) {
+          return '#' + value;
         },
       },
       {
         sortable: true,
-        name: "language",
-        editable: false,        
-        align: "left",
-        label: "language",
-        list: "language/getItems",
-        searchParam: "language",
+        name: 'language',
+        editable: false,
+        align: 'left',
+        label: 'language',
+        list: 'language/getItems',
+        searchParam: 'language',
         externalFilter: false,
-        format: function (value) {
+        format(value) {
           return value?.language;
         },
-
-        saveFormat: function (value) {
-          return value ? "/languages/" + (value.value || value) : null;
+        saveFormat(value) {
+          return value ? '/languages/' + (value.value || value) : null;
         },
-      },      
+      },
       {
         sortable: true,
-        name: "store",
+        name: 'store',
         editable: false,
-        label: "store",
-        align: "left",     
-        format(value, column, row) {
+        label: 'store',
+        align: 'left',
+        format(value) {
           return value;
         },
       },
       {
         sortable: true,
-        name: "type",
+        name: 'type',
         editable: false,
-        label: "type",
-        align: "left",     
-        format(value, column, row) {
+        label: 'type',
+        align: 'left',
+        format(value) {
           return value;
         },
-      },    
+      },
       {
         sortable: true,
-        name: "key",
+        name: 'key',
         editable: false,
-        label: "key",
-        align: "left",     
-        format(value, column, row) {
+        label: 'key',
+        align: 'left',
+        format(value) {
           return value;
         },
-      },         
+      },
       {
         sortable: true,
-        name: "translate",
+        name: 'translate',
         editable: true,
-        label: "translate",
-        align: "left",     
-        format(value, column, row) {
+        label: 'translate',
+        align: 'left',
+        format(value) {
           return value;
         },
-      },        
+      },
     ],
   },
-  actions: actions,
+  actions: {
+    ...customActions,
+    ...actions,
+  },
   getters,
   mutations,
 };

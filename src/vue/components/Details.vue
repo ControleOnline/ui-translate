@@ -27,6 +27,9 @@ export default {
         externalFilters: false,
         store: "translate",
         categories: ["translate"],
+        savePayload: {
+          revised: true,
+        },
         add: true,
         delete: true,
         filters: true,
