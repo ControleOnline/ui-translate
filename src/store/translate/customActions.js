@@ -1,4 +1,4 @@
-import * as types from '@controleonline/ui-default/src/store/default/mutation_types';
+const SET_PENDING_MESSAGES = 'SET_PENDING_MESSAGES';
 
 const normalizeLanguage = value =>
   String(value || '')
@@ -187,10 +187,10 @@ export const queueMissingTranslate = ({commit, getters}, payload = {}) => {
   const translate = normalizeText(payload.translate);
 
   if (!language || !companyId || !store || !type || !key) {
-    return getters.messages || {};
+    return getters.pendingMessages || {};
   }
 
-  const currentMessages = cloneMessages(getters.messages);
+  const currentMessages = cloneMessages(getters.pendingMessages);
   const existingMessage = getStoreBucket(currentMessages, language, companyId, store)?.[type]?.[key];
   if (existingMessage === translate) {
     return currentMessages;
@@ -206,7 +206,7 @@ export const queueMissingTranslate = ({commit, getters}, payload = {}) => {
     translate,
   );
 
-  commit(types.SET_MESSAGES, nextMessages);
+  commit(SET_PENDING_MESSAGES, nextMessages);
   return nextMessages;
 };
 
@@ -218,10 +218,10 @@ export const removePendingTranslate = ({commit, getters}, payload = {}) => {
   const key = normalizeText(payload.key);
 
   if (!language || !companyId || !store || !type || !key) {
-    return getters.messages || {};
+    return getters.pendingMessages || {};
   }
 
-  const currentMessages = cloneMessages(getters.messages);
+  const currentMessages = cloneMessages(getters.pendingMessages);
   const nextMessages = deleteNestedValue(
     currentMessages,
     language,
@@ -231,6 +231,10 @@ export const removePendingTranslate = ({commit, getters}, payload = {}) => {
     key,
   );
 
-  commit(types.SET_MESSAGES, nextMessages);
+  commit(SET_PENDING_MESSAGES, nextMessages);
   return nextMessages;
+};
+
+export const setPendingMessages = ({commit}, messages = {}) => {
+  commit(SET_PENDING_MESSAGES, cloneMessages(messages));
 };
