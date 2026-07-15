@@ -1,3 +1,5 @@
+import {api} from '@controleonline/ui-common/src/api';
+
 const SET_PENDING_MESSAGES = 'SET_PENDING_MESSAGES';
 
 const normalizeLanguage = value =>
@@ -237,4 +239,11 @@ export const removePendingTranslate = ({commit, getters}, payload = {}) => {
 
 export const setPendingMessages = ({commit}, messages = {}) => {
   commit(SET_PENDING_MESSAGES, cloneMessages(messages));
+};
+
+export const resolveQueuedMessages = ({}, payload = {}) => {
+  return api.fetch('/translates/resolve', {
+    method: 'POST',
+    body: payload,
+  });
 };
