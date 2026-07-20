@@ -49,7 +49,7 @@ export default {
         label: 'language',
         list: 'language/getItems',
         searchParam: 'language',
-        externalFilter: false,
+        externalFilter: true,
         format(value) {
           return value?.language;
         },
@@ -58,11 +58,20 @@ export default {
         },
       },
       {
+        externalFilter: true,
+        label: 'Revisao',
+        list: true,
+        name: 'review',
+        table: false,
+      },
+      {
         sortable: true,
         name: 'store',
         editable: false,
         label: 'store',
         align: 'left',
+        externalFilter: true,
+        list: true,
         format(value) {
           return value;
         },
@@ -73,6 +82,8 @@ export default {
         editable: false,
         label: 'type',
         align: 'left',
+        externalFilter: true,
+        list: true,
         format(value) {
           return value;
         },
