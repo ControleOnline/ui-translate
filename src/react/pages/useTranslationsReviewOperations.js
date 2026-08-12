@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
-import { api } from '@controleonline/ui-common/src/api';
-import { formatApiError } from './TranslationsReviewHelpers';
+import {useCallback} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import {api} from '@controleonline/ui-common/src/api';
+import {formatApiError} from './TranslationsReviewHelpers';
 const {
   buildOverviewFromTranslateCollections,
   isNotFoundError,
@@ -14,6 +15,7 @@ export function useTranslationsReviewOperations(ctx) {
     currentCompany,
     filters,
     setFilters,
+    setSearchInput,
     setLanguages,
     resolvedLanguage,
     mainCompanyId,
@@ -33,37 +35,40 @@ export function useTranslationsReviewOperations(ctx) {
   const loadLanguages = useCallback(async () => {
     try {
       const response = await api.fetch('/languages', {
-        params: { },
+        params: {},
       });
-      const languageItems = Array.isArray(response?.member) ? response.member : [];
+      const languageItems = Array.isArray(response?.member)
+        ? response.member
+        : [];
       setLanguages(languageItems);
 
       if (!filters.language) {
-        const fallbackLanguage = resolvedLanguage || languageItems[0]?.language || 'pt-br';
+        const fallbackLanguage =
+          resolvedLanguage || languageItems[0]?.language || 'pt-br';
         if (fallbackLanguage) {
-          setFilters(previous => (
+          setFilters(previous =>
             previous.language
               ? previous
-              : { ...previous, language: fallbackLanguage }
-          ));
+              : {...previous, language: fallbackLanguage},
+          );
         }
       }
     } catch {
       setLanguages([]);
       if (!filters.language) {
-        setFilters(previous => (
+        setFilters(previous =>
           previous.language
             ? previous
-            : { ...previous, language: resolvedLanguage || 'pt-br' }
-        ));
+            : {...previous, language: resolvedLanguage || 'pt-br'},
+        );
       }
     }
   }, [filters.language, resolvedLanguage]);
 
   const loadOverview = useCallback(async () => {
     const activeLanguage = filters.language || resolvedLanguage;
-    const mainCompany = defaultCompany || currentCompany;
-    const mainCompanyId = mainCompany?.id;
+    const resolvedMainCompany = mainCompany || currentCompany;
+    const resolvedMainCompanyId = mainCompanyId || resolvedMainCompany?.id;
 
     if (!currentCompanyId || !activeLanguage) {
       setItems([]);
@@ -76,10 +81,10 @@ export function useTranslationsReviewOperations(ctx) {
     const overviewParams = {
       people: currentCompanyId,
       'language.language': activeLanguage,
-      ...(filters.store ? { store: filters.store } : {}),
-      ...(filters.type ? { type: filters.type } : {}),
-      ...(filters.search ? { search: filters.search } : {}),
-      ...(filters.pendingOnly ? { pendingReview: 1 } : {}),
+      ...(filters.store ? {store: filters.store} : {}),
+      ...(filters.type ? {type: filters.type} : {}),
+      ...(filters.search ? {search: filters.search} : {}),
+      ...(filters.pendingOnly ? {pendingReview: 1} : {}),
     };
 
     const loadAllTranslates = async peopleId => {
@@ -93,8 +98,8 @@ export function useTranslationsReviewOperations(ctx) {
             people: peopleId,
             'language.language': activeLanguage,
             page,
-            ...(filters.store ? { store: filters.store } : {}),
-            ...(filters.type ? { type: filters.type } : {}),
+            ...(filters.store ? {store: filters.store} : {}),
+            ...(filters.type ? {type: filters.type} : {}),
           },
         });
 
@@ -109,7 +114,10 @@ export function useTranslationsReviewOperations(ctx) {
           totalItems = normalizeCollectionTotalItems(response);
         }
 
-        if (pageItems.length === 0 || (totalItems != null && collectedItems.length >= totalItems)) {
+        if (
+          pageItems.length === 0 ||
+          (totalItems != null && collectedItems.length >= totalItems)
+        ) {
           break;
         }
 
@@ -121,19 +129,21 @@ export function useTranslationsReviewOperations(ctx) {
 
     const loadOverviewFromCollections = async () => {
       const shouldLoadMainFallback =
-        Boolean(mainCompanyId)
-        && String(mainCompanyId) !== String(currentCompanyId);
+        Boolean(resolvedMainCompanyId) &&
+        String(resolvedMainCompanyId) !== String(currentCompanyId);
 
       const [companyTranslations, fallbackTranslations] = await Promise.all([
         loadAllTranslates(currentCompanyId),
-        shouldLoadMainFallback ? loadAllTranslates(mainCompanyId) : Promise.resolve([]),
+        shouldLoadMainFallback
+          ? loadAllTranslates(resolvedMainCompanyId)
+          : Promise.resolve([]),
       ]);
 
       return buildOverviewFromTranslateCollections({
         companyTranslations,
         fallbackTranslations,
         selectedCompany: currentCompany,
-        mainCompany,
+        mainCompany: resolvedMainCompany,
         activeLanguage,
         search: filters.search,
         pendingOnly: filters.pendingOnly,
@@ -141,25 +151,29 @@ export function useTranslationsReviewOperations(ctx) {
     };
 
     try {
-      const response = overviewLoadModeRef.current === 'collection'
-        ? await loadOverviewFromCollections()
-        : await api.fetch('/translates/overview', {
-          params: overviewParams,
-        }).catch(async error => {
-          if (!isNotFoundError(error)) {
-            throw error;
-          }
+      const response =
+        overviewLoadModeRef.current === 'collection'
+          ? await loadOverviewFromCollections()
+          : await api
+              .fetch('/translates/overview', {
+                params: overviewParams,
+              })
+              .catch(async error => {
+                if (!isNotFoundError(error)) {
+                  throw error;
+                }
 
-          overviewLoadModeRef.current = 'collection';
-          return loadOverviewFromCollections();
-        });
+                overviewLoadModeRef.current = 'collection';
+                return loadOverviewFromCollections();
+              });
 
       const nextItems = normalizeCollectionItems(response);
       setItems(nextItems);
       setSummary(response?.summary || {});
       setDrafts(
         nextItems.reduce((accumulator, item) => {
-          accumulator[item.rowId] = item.companyTranslate || item.translate || '';
+          accumulator[item.rowId] =
+            item.companyTranslate || item.translate || '';
           return accumulator;
         }, {}),
       );
@@ -174,7 +188,8 @@ export function useTranslationsReviewOperations(ctx) {
   }, [
     currentCompany,
     currentCompanyId,
-    defaultCompany,
+    mainCompany,
+    mainCompanyId,
     filters.language,
     filters.pendingOnly,
     filters.search,
@@ -206,18 +221,26 @@ export function useTranslationsReviewOperations(ctx) {
     }
   }, [loadLanguages, loadOverview]);
 
-  const handleExternalFiltersChange = useCallback(nextFilters => {
-    setFilters(previous => ({
-      ...previous,
-      language: nextFilters?.language || resolvedLanguage || previous.language,
-      pendingOnly: nextFilters?.review ? nextFilters.review === 'pending' : true,
-      store: nextFilters?.store || '',
-      type: nextFilters?.type || '',
-    }));
-  }, [resolvedLanguage]);
+  const handleExternalFiltersChange = useCallback(
+    nextFilters => {
+      setFilters(previous => ({
+        ...previous,
+        language:
+          nextFilters?.language || resolvedLanguage || previous.language,
+        pendingOnly: nextFilters?.review
+          ? nextFilters.review === 'pending'
+          : true,
+        store: nextFilters?.store || '',
+        type: nextFilters?.type || '',
+      }));
+    },
+    [resolvedLanguage],
+  );
 
   const clearFilters = useCallback(() => {
-    setSearchInput('');
+    if (typeof setSearchInput === 'function') {
+      setSearchInput('');
+    }
     setFilters(previous => ({
       ...previous,
       store: '',
@@ -234,43 +257,49 @@ export function useTranslationsReviewOperations(ctx) {
     }));
   }, []);
 
-  const handleSave = useCallback(async row => {
-    const draftValue = drafts[row.rowId];
-    if (!String(draftValue || '').trim()) return;
+  const handleSave = useCallback(
+    async row => {
+      const draftValue = drafts[row.rowId];
+      if (!String(draftValue || '').trim()) return;
 
-    setSavingRows(previous => ({
-      ...previous,
-      [row.rowId]: true,
-    }));
-
-    try {
-      await api.fetch(
-        row.translateId ? `/translates/${row.translateId}` : '/translates',
-        {
-          method: row.translateId ? 'PUT' : 'POST',
-          body: {
-            people: `/people/${currentCompanyId}`,
-            language: row.language?.['@id'] || `/languages/${row.language?.id}`,
-            store: row.store,
-            type: row.type,
-            key: row.key,
-            translate: draftValue,
-            revised: true,
-          },
-        },
-      );
-
-      showSuccess(row.pendingReview ? 'Traducao revisada.' : 'Traducao salva.');
-      await loadOverview();
-    } catch (error) {
-      showError(formatApiError(error));
-    } finally {
       setSavingRows(previous => ({
         ...previous,
-        [row.rowId]: false,
+        [row.rowId]: true,
       }));
-    }
-  }, [currentCompanyId, drafts, loadOverview, showError, showSuccess]);
+
+      try {
+        await api.fetch(
+          row.translateId ? `/translates/${row.translateId}` : '/translates',
+          {
+            method: row.translateId ? 'PUT' : 'POST',
+            body: {
+              people: `/people/${currentCompanyId}`,
+              language:
+                row.language?.['@id'] || `/languages/${row.language?.id}`,
+              store: row.store,
+              type: row.type,
+              key: row.key,
+              translate: draftValue,
+              revised: true,
+            },
+          },
+        );
+
+        showSuccess(
+          row.pendingReview ? 'Traducao revisada.' : 'Traducao salva.',
+        );
+        await loadOverview();
+      } catch (error) {
+        showError(formatApiError(error));
+      } finally {
+        setSavingRows(previous => ({
+          ...previous,
+          [row.rowId]: false,
+        }));
+      }
+    },
+    [currentCompanyId, drafts, loadOverview, showError, showSuccess],
+  );
 
   return {
     loadLanguages,
@@ -278,5 +307,6 @@ export function useTranslationsReviewOperations(ctx) {
     onRefresh,
     handleDraftChange,
     handleSave,
+    clearFilters,
   };
 }
