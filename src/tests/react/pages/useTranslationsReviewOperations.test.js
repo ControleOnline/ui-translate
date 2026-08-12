@@ -8,6 +8,18 @@ global.IS_REACT_ACT_ENVIRONMENT = true;
 const mockApiFetch = jest.fn();
 const mockUseFocusEffect = jest.fn();
 
+jest.mock('react-native', () => ({
+  Platform: {
+    OS: 'web',
+    select: values => values?.web || values?.default,
+  },
+  StyleSheet: {
+    create: styles => styles,
+  },
+  Text: props => React.createElement('text', props, props.children),
+  View: props => React.createElement('view', props, props.children),
+}));
+
 jest.mock('@react-navigation/native', () => ({
   useFocusEffect: mockUseFocusEffect,
 }));
