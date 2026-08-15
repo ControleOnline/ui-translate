@@ -305,6 +305,7 @@ export function useTranslationsReviewOperations(ctx) {
     loadLanguages,
     loadOverview,
     onRefresh,
+    handleExternalFiltersChange,
     handleDraftChange,
     handleSave,
     clearFilters,
