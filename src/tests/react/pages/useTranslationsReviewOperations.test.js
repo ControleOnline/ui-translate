@@ -40,7 +40,7 @@ describe('useTranslationsReviewOperations', () => {
     mockUseFocusEffect.mockReset();
   });
 
-  it('renders without relying on an undeclared defaultCompany and exposes clearFilters', async () => {
+  it('does not rely on undeclared company state and exposes page callbacks', async () => {
     mockApiFetch.mockResolvedValue({
       member: [],
       summary: {},
@@ -88,6 +88,7 @@ describe('useTranslationsReviewOperations', () => {
     expect(mockUseFocusEffect).toHaveBeenCalledTimes(2);
     expect(typeof result.loadOverview).toBe('function');
     expect(typeof result.clearFilters).toBe('function');
+    expect(typeof result.handleExternalFiltersChange).toBe('function');
 
     await renderer.act(async () => {
       await result.loadOverview();
@@ -104,10 +105,16 @@ describe('useTranslationsReviewOperations', () => {
     );
 
     await renderer.act(async () => {
+      result.handleExternalFiltersChange({
+        language: 'en-us',
+        review: 'all',
+        store: 'manager',
+        type: 'label',
+      });
       result.clearFilters();
     });
 
     expect(ctx.setSearchInput).toHaveBeenCalledWith('');
-    expect(ctx.setFilters).toHaveBeenCalled();
+    expect(ctx.setFilters).toHaveBeenCalledTimes(2);
   });
 });
