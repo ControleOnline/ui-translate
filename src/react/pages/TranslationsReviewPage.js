@@ -111,22 +111,6 @@ export default function TranslationsReviewPage() {
       String(currentCompanyId) !== String(mainCompanyId),
     );
   }, [currentCompanyId, defaultCompany?.id, summary?.mainCompany?.id]);
-  const mainCompanyLabel = summary?.mainCompany?.name || defaultCompany?.name || defaultCompany?.alias || 'empresa principal';
-  const languageFilterOptions = useMemo(() => languageOptions.map(({ value, label }) => ({ value, label })), [languageOptions]);
-  const storeFilterOptions = useMemo(() => storeOptions.map(store => ({ value: store, label: store })), [storeOptions]);
-  const typeFilterOptions = useMemo(() => typeOptions.map(type => ({ value: type, label: type })), [typeOptions]);
-  const reviewFilterOptions = useMemo(() => [{ value: 'all', label: 'Todas as traduções' }, { value: 'pending', label: summary?.pendingReview > 0 ? `Pendentes (${summary.pendingReview})` : 'Pendentes' }], [summary?.pendingReview]);
-  const externalFilterValues = useMemo(() => ({ language: filters.language, review: filters.pendingOnly ? 'pending' : 'all', store: filters.store, type: filters.type }), [filters.language, filters.pendingOnly, filters.store, filters.type]);
-  const getExternalFilterOptions = useCallback(column => {
-    const fieldName = column?.name || column?.key;
-    if (fieldName === 'language') return languageFilterOptions;
-    if (fieldName === 'review') return reviewFilterOptions;
-    if (fieldName === 'store') return storeFilterOptions;
-    if (fieldName === 'type') return typeFilterOptions;
-    return [];
-  }, [languageFilterOptions, reviewFilterOptions, storeFilterOptions, typeFilterOptions]);
-  const mainCompanyId = defaultCompany?.id;
-  const mainCompany = defaultCompany;
 
   const mainCompanyLabel =
     summary?.mainCompany?.name ||
