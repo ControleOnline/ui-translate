@@ -12,6 +12,10 @@ const jsonHeaders = () => ({
   ...CORS_HEADERS,
   'content-type': 'application/ld+json; charset=utf-8',
 });
+const textHeaders = () => ({
+  ...CORS_HEADERS,
+  'content-type': 'text/css; charset=utf-8',
+});
 const collection = member => ({
   member,
   'hydra:member': member,
@@ -19,14 +23,21 @@ const collection = member => ({
   'hydra:totalItems': member.length,
 });
 
+const company = {
+  id: 3,
+  name: 'Gyros',
+  alias: 'GYROS',
+  panel_enabled: true,
+  enabled: true,
+  commercial_enabled: true,
+  theme: {colors: {primary: '#0EA5E9', secondary: '#F97316'}},
+  configs: {},
+};
+
 const reviewItem = {
   rowId: 'ui:label:greeting',
   translateId: 11,
-  language: {
-    id: 1,
-    '@id': '/languages/1',
-    language: 'pt-br',
-  },
+  language: {id: 1, '@id': '/languages/1', language: 'pt-br'},
   store: 'ui',
   type: 'label',
   key: 'greeting',
@@ -62,21 +73,59 @@ test.describe('translations review smoke', () => {
     });
 
     await page.route(`${API_ORIGIN}/**`, async route => {
-      const method = route.request().method().toUpperCase();
+      const request = route.request();
+      const method = request.method().toUpperCase();
+      const url = new URL(request.url());
+      const path = url.pathname.replace(/^\/+/, '');
+
       if (method === 'OPTIONS') {
         return route.fulfill({status: 204, headers: CORS_HEADERS, body: ''});
       }
-
-      const path = new URL(route.request().url()).pathname;
-      if (path === '/languages') {
+      if (path === 'themes-colors.css') {
+        return route.fulfill({
+          status: 200,
+          headers: textHeaders(),
+          body: ':root { --primary: #0ea5e9; --secondary: #f97316; }',
+        });
+      }
+      if (path === 'runtime/ip') {
         return route.fulfill({
           status: 200,
           headers: jsonHeaders(),
-          body: JSON.stringify(collection([{id: 1, '@id': '/languages/1', language: 'pt-br'}])),
+          body: JSON.stringify({ip: '127.0.0.1'}),
         });
       }
-
-      if (path === '/translates/overview') {
+      if (path === 'menus-people') {
+        return route.fulfill({
+          status: 200,
+          headers: jsonHeaders(),
+          body: JSON.stringify({modules: {}}),
+        });
+      }
+      if (path === 'people/companies/my') {
+        return route.fulfill({
+          status: 200,
+          headers: jsonHeaders(),
+          body: JSON.stringify(collection([company])),
+        });
+      }
+      if (path === 'people/company/default') {
+        return route.fulfill({
+          status: 200,
+          headers: jsonHeaders(),
+          body: JSON.stringify(company),
+        });
+      }
+      if (path === 'languages') {
+        return route.fulfill({
+          status: 200,
+          headers: jsonHeaders(),
+          body: JSON.stringify(
+            collection([{id: 1, '@id': '/languages/1', language: 'pt-br'}]),
+          ),
+        });
+      }
+      if (path === 'translates/overview') {
         overviewRequests += 1;
         return route.fulfill({
           status: 200,
@@ -84,24 +133,25 @@ test.describe('translations review smoke', () => {
           body: JSON.stringify(overview()),
         });
       }
-
-      if (path === '/translates/11' && method === 'PUT') {
+      if (path === 'translates/11' && method === 'PUT') {
         saveRequests += 1;
         return route.fulfill({
           status: 200,
           headers: jsonHeaders(),
-          body: JSON.stringify({...reviewItem, translate: 'Olá revisado', companyTranslate: 'Olá revisado'}),
+          body: JSON.stringify({
+            ...reviewItem,
+            translate: 'Olá revisado',
+            companyTranslate: 'Olá revisado',
+          }),
         });
       }
-
-      if (path.startsWith('/translates')) {
+      if (path.startsWith('translates')) {
         return route.fulfill({
           status: 200,
           headers: jsonHeaders(),
           body: JSON.stringify(collection([])),
         });
       }
-
       return route.fulfill({
         status: 200,
         headers: jsonHeaders(),
@@ -111,32 +161,32 @@ test.describe('translations review smoke', () => {
 
     await page.addInitScript(
       ({appVersion}) => {
-        const set = (key, value) => {
-          try {
-            localStorage.setItem(key, value);
-          } catch {}
-        };
-        set(
+        localStorage.setItem(
           'session',
           JSON.stringify({
             id: 7,
             people: '/people/7',
-            api_key: 't',
+            api_key: 'test-api-key',
             active: 1,
             mycompany: 3,
-            roles: ['ROLE_ADMIN'],
+            roles: ['ROLE_SUPER'],
           }),
         );
-        set('config', JSON.stringify({language: 'pt-br'}));
-        set('app-type', 'ERP');
-        set(
+        localStorage.setItem('config', JSON.stringify({language: 'pt-br'}));
+        localStorage.setItem('app-type', 'MANAGER');
+        localStorage.setItem(
           'device',
           JSON.stringify({
-            id: 'web',
-            device: 'web',
+            id: 'web-manager',
+            device: 'web-manager',
             type: 'WEB',
+            appName: 'Browser Manager',
             appVersion,
             buildNumber: appVersion,
+            systemName: 'web',
+            systemVersion: 'web',
+            deviceType: 'web',
+            metadata: {},
           }),
         );
       },
