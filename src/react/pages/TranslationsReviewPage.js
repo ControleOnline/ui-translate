@@ -69,8 +69,8 @@ export default function TranslationsReviewPage() {
     if (fieldName === 'type') return typeFilterOptions;
     return [];
   }, [languageFilterOptions, reviewFilterOptions, storeFilterOptions, typeFilterOptions]);
-  const mainCompanyId = summary?.mainCompany?.id || defaultCompany?.id;
-  const mainCompany = summary?.mainCompany || defaultCompany;
+  const mainCompanyId = defaultCompany?.id;
+  const mainCompany = defaultCompany;
 
   const { onRefresh, handleExternalFiltersChange, handleDraftChange, handleSave, clearFilters } = useTranslationsReviewOperations({
     currentCompanyId, currentCompany, filters, setFilters, setSearchInput, setLanguages, resolvedLanguage,

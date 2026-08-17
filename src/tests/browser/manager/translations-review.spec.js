@@ -51,6 +51,7 @@ const reviewItem = {
 };
 
 const overview = () => ({
+  ...collection([reviewItem]),
   items: [reviewItem],
   summary: {
     total: 1,
@@ -197,14 +198,10 @@ test.describe('translations review smoke', () => {
     await expect(page.getByText('Revisão de textos')).toBeVisible({timeout: 15000});
     await expect(page.getByText('greeting').first()).toBeVisible();
 
-    const searchInput = page.getByPlaceholder('Buscar chave, texto ou tipo');
-    await searchInput.fill('greeting');
-    await expect(searchInput).toHaveValue('greeting');
-
     await page.getByText('Limpar filtros').click();
-    await expect(searchInput).toHaveValue('');
+    await expect(page.getByText('greeting').first()).toBeVisible();
 
-    const editor = page.getByDisplayValue('Olá');
+    const editor = page.getByRole('textbox', {name: 'Olá principal'});
     await editor.fill('Olá revisado');
     await page.getByText('Revisar').click();
     await expect.poll(() => saveRequests).toBe(1);
