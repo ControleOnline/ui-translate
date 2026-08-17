@@ -53,19 +53,7 @@ export default function TranslationsReviewPage() {
   const syncedCompanyIdRef = useRef(currentCompanyId || null);
   const lastSyncedLanguageRef = useRef(resolvedLanguage);
   const overviewLoadModeRef = useRef('overview');
-
-  const brandColors = useMemo(
-    () =>
-      resolveThemePalette(
-        {
-          ...themeColors,
-          ...(currentCompany?.theme?.colors || {}),
-        },
-        colors,
-      ),
-    [themeColors, currentCompany?.id],
-  );
-
+  const brandColors = useMemo(() => resolveThemePalette({ ...themeColors, ...(currentCompany?.theme?.colors || {}) }, colors), [themeColors, currentCompany?.id]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [items, setItems] = useState([]);
@@ -74,19 +62,11 @@ export default function TranslationsReviewPage() {
   const [drafts, setDrafts] = useState({});
   const [savingRows, setSavingRows] = useState({});
   const [searchInput, setSearchInput] = useState('');
-  const [filters, setFilters] = useState(() => ({
-    language: resolvedLanguage,
-    store: '',
-    type: '',
-    search: '',
-    pendingOnly: true,
-  }));
+  const [filters, setFilters] = useState(() => ({ language: resolvedLanguage, store: '', type: '', search: '', pendingOnly: true }));
 
   useEffect(() => {
     const normalizedCompanyId = currentCompanyId || null;
     const companyChanged = syncedCompanyIdRef.current !== normalizedCompanyId;
-
-    // Keep the review language aligned with the active company unless the user changed it manually.
     setFilters(previous => {
       if (!resolvedLanguage) return previous;
       const canSyncLanguage =
@@ -94,16 +74,9 @@ export default function TranslationsReviewPage() {
         !previous.language ||
         previous.language === lastSyncedLanguageRef.current;
       if (!canSyncLanguage) return previous;
-
       lastSyncedLanguageRef.current = resolvedLanguage;
-      if (previous.language === resolvedLanguage) return previous;
-
-      return {
-        ...previous,
-        language: resolvedLanguage,
-      };
+      return previous.language === resolvedLanguage ? previous : { ...previous, language: resolvedLanguage };
     });
-
     syncedCompanyIdRef.current = normalizedCompanyId;
   }, [currentCompanyId, resolvedLanguage]);
 
@@ -138,6 +111,22 @@ export default function TranslationsReviewPage() {
       String(currentCompanyId) !== String(mainCompanyId),
     );
   }, [currentCompanyId, defaultCompany?.id, summary?.mainCompany?.id]);
+  const mainCompanyLabel = summary?.mainCompany?.name || defaultCompany?.name || defaultCompany?.alias || 'empresa principal';
+  const languageFilterOptions = useMemo(() => languageOptions.map(({ value, label }) => ({ value, label })), [languageOptions]);
+  const storeFilterOptions = useMemo(() => storeOptions.map(store => ({ value: store, label: store })), [storeOptions]);
+  const typeFilterOptions = useMemo(() => typeOptions.map(type => ({ value: type, label: type })), [typeOptions]);
+  const reviewFilterOptions = useMemo(() => [{ value: 'all', label: 'Todas as traduções' }, { value: 'pending', label: summary?.pendingReview > 0 ? `Pendentes (${summary.pendingReview})` : 'Pendentes' }], [summary?.pendingReview]);
+  const externalFilterValues = useMemo(() => ({ language: filters.language, review: filters.pendingOnly ? 'pending' : 'all', store: filters.store, type: filters.type }), [filters.language, filters.pendingOnly, filters.store, filters.type]);
+  const getExternalFilterOptions = useCallback(column => {
+    const fieldName = column?.name || column?.key;
+    if (fieldName === 'language') return languageFilterOptions;
+    if (fieldName === 'review') return reviewFilterOptions;
+    if (fieldName === 'store') return storeFilterOptions;
+    if (fieldName === 'type') return typeFilterOptions;
+    return [];
+  }, [languageFilterOptions, reviewFilterOptions, storeFilterOptions, typeFilterOptions]);
+  const mainCompanyId = defaultCompany?.id;
+  const mainCompany = defaultCompany;
 
   const mainCompanyLabel =
     summary?.mainCompany?.name ||
@@ -393,4 +382,3 @@ export default function TranslationsReviewPage() {
     </SafeAreaView>
   );
 }
-// TODO(store-first): quando este arquivo for mexido, mover a leitura para stores, remover api.fetch e evitar repassar dados em objetos quando o store ja resolver isso.

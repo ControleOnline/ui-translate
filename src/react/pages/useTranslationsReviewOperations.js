@@ -41,7 +41,6 @@ export function useTranslationsReviewOperations(ctx) {
         ? response.member
         : [];
       setLanguages(languageItems);
-
       if (!filters.language) {
         const fallbackLanguage =
           resolvedLanguage || languageItems[0]?.language || 'pt-br';
@@ -63,7 +62,7 @@ export function useTranslationsReviewOperations(ctx) {
         );
       }
     }
-  }, [filters.language, resolvedLanguage]);
+  }, [filters.language, resolvedLanguage, setFilters, setLanguages]);
 
   const loadOverview = useCallback(async () => {
     const activeLanguage = filters.language || resolvedLanguage;
@@ -71,13 +70,8 @@ export function useTranslationsReviewOperations(ctx) {
     const resolvedMainCompanyId = mainCompanyId || resolvedMainCompany?.id;
 
     if (!currentCompanyId || !activeLanguage) {
-      setItems([]);
-      setSummary({});
-      setDrafts({});
-      setLoading(false);
-      return;
+      setItems([]); setSummary({}); setDrafts({}); setLoading(false); return;
     }
-
     const overviewParams = {
       people: currentCompanyId,
       'language.language': activeLanguage,
@@ -86,12 +80,8 @@ export function useTranslationsReviewOperations(ctx) {
       ...(filters.search ? {search: filters.search} : {}),
       ...(filters.pendingOnly ? {pendingReview: 1} : {}),
     };
-
     const loadAllTranslates = async peopleId => {
-      const collectedItems = [];
-      let page = 1;
-      let totalItems = null;
-
+      const collectedItems = []; let page = 1; let totalItems = null;
       while (page <= 1000) {
         const response = await api.fetch('/translates', {
           params: {
@@ -104,10 +94,7 @@ export function useTranslationsReviewOperations(ctx) {
         });
 
         const pageItems = normalizeCollectionItems(response);
-        if (pageItems.length === 0) {
-          break;
-        }
-
+        if (!pageItems.length) break;
         collectedItems.push(...pageItems);
 
         if (totalItems == null) {
@@ -123,10 +110,8 @@ export function useTranslationsReviewOperations(ctx) {
 
         page += 1;
       }
-
       return collectedItems;
     };
-
     const loadOverviewFromCollections = async () => {
       const shouldLoadMainFallback =
         Boolean(resolvedMainCompanyId) &&
@@ -149,7 +134,6 @@ export function useTranslationsReviewOperations(ctx) {
         pendingOnly: filters.pendingOnly,
       });
     };
-
     try {
       const response =
         overviewLoadModeRef.current === 'collection'
@@ -199,27 +183,12 @@ export function useTranslationsReviewOperations(ctx) {
     showError,
   ]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadLanguages();
-    }, [loadLanguages]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      loadOverview();
-    }, [loadOverview]),
-  );
+  useFocusEffect(useCallback(() => { loadLanguages(); }, [loadLanguages]));
+  useFocusEffect(useCallback(() => { setLoading(true); loadOverview(); }, [loadOverview, setLoading]));
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([loadLanguages(), loadOverview()]);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [loadLanguages, loadOverview]);
+    setRefreshing(true); try { await Promise.all([loadLanguages(), loadOverview()]); } finally { setRefreshing(false); }
+  }, [loadLanguages, loadOverview, setRefreshing]);
 
   const handleExternalFiltersChange = useCallback(
     nextFilters => {
@@ -251,11 +220,8 @@ export function useTranslationsReviewOperations(ctx) {
   }, []);
 
   const handleDraftChange = useCallback((rowId, value) => {
-    setDrafts(previous => ({
-      ...previous,
-      [rowId]: value,
-    }));
-  }, []);
+    setDrafts(previous => ({ ...previous, [rowId]: value }));
+  }, [setDrafts]);
 
   const handleSave = useCallback(
     async row => {
