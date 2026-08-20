@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { api } from '@controleonline/ui-common/src/api';
 import { formatApiError } from './TranslationsReviewHelpers';
 const {
@@ -12,6 +13,7 @@ export function useTranslationsReviewOperations(ctx) {
   const {
     currentCompanyId,
     currentCompany,
+    defaultCompany,
     filters,
     setFilters,
     setLanguages,
@@ -62,8 +64,9 @@ export function useTranslationsReviewOperations(ctx) {
 
   const loadOverview = useCallback(async () => {
     const activeLanguage = filters.language || resolvedLanguage;
-    const mainCompany = defaultCompany || currentCompany;
-    const mainCompanyId = mainCompany?.id;
+    // Prefer explicit main company from page (summary/defaultCompany); never leave defaultCompany unbound.
+    const resolvedMainCompany = mainCompany || defaultCompany || currentCompany;
+    const resolvedMainCompanyId = mainCompanyId || resolvedMainCompany?.id;
 
     if (!currentCompanyId || !activeLanguage) {
       setItems([]);
@@ -121,19 +124,19 @@ export function useTranslationsReviewOperations(ctx) {
 
     const loadOverviewFromCollections = async () => {
       const shouldLoadMainFallback =
-        Boolean(mainCompanyId)
-        && String(mainCompanyId) !== String(currentCompanyId);
+        Boolean(resolvedMainCompanyId)
+        && String(resolvedMainCompanyId) !== String(currentCompanyId);
 
       const [companyTranslations, fallbackTranslations] = await Promise.all([
         loadAllTranslates(currentCompanyId),
-        shouldLoadMainFallback ? loadAllTranslates(mainCompanyId) : Promise.resolve([]),
+        shouldLoadMainFallback ? loadAllTranslates(resolvedMainCompanyId) : Promise.resolve([]),
       ]);
 
       return buildOverviewFromTranslateCollections({
         companyTranslations,
         fallbackTranslations,
         selectedCompany: currentCompany,
-        mainCompany,
+        mainCompany: resolvedMainCompany,
         activeLanguage,
         search: filters.search,
         pendingOnly: filters.pendingOnly,

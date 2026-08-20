@@ -196,6 +196,7 @@ export default function TranslationsReviewPage() {
   } = useTranslationsReviewOperations({
     currentCompanyId,
     currentCompany,
+    defaultCompany,
     filters,
     setFilters,
     setLanguages,
