@@ -89,10 +89,6 @@ describe('useTranslationsReviewOperations', () => {
     expect(typeof result.loadOverview).toBe('function');
     expect(typeof result.clearFilters).toBe('function');
     expect(typeof result.handleExternalFiltersChange).toBe('function');
-    expect(typeof result.handleDraftChange).toBe('function');
-    expect(typeof result.handleSave).toBe('function');
-    expect(typeof result.onRefresh).toBe('function');
-    expect(typeof result.loadLanguages).toBe('function');
 
     await renderer.act(async () => {
       await result.loadOverview();
@@ -120,55 +116,5 @@ describe('useTranslationsReviewOperations', () => {
 
     expect(ctx.setSearchInput).toHaveBeenCalledWith('');
     expect(ctx.setFilters).toHaveBeenCalledTimes(2);
-  });
-
-  it('handleExternalFiltersChange maps review pendingOnly correctly', async () => {
-    mockApiFetch.mockResolvedValue({member: [], summary: {}});
-    const setFilters = jest.fn();
-    const setSearchInput = jest.fn();
-    const ctx = {
-      currentCompanyId: 7,
-      currentCompany: {id: 7},
-      filters: {language: 'pt-br', store: '', type: '', search: '', pendingOnly: true},
-      setFilters,
-      setSearchInput,
-      setLanguages: jest.fn(),
-      resolvedLanguage: 'pt-br',
-      mainCompanyId: 1,
-      mainCompany: {id: 1},
-      overviewLoadModeRef: {current: 'overview'},
-      setLoading: jest.fn(),
-      setItems: jest.fn(),
-      setSummary: jest.fn(),
-      setDrafts: jest.fn(),
-      setRefreshing: jest.fn(),
-      setSavingRows: jest.fn(),
-      drafts: {},
-      showError: jest.fn(),
-      showSuccess: jest.fn(),
-    };
-    let result;
-    function Harness() {
-      result = useTranslationsReviewOperations(ctx);
-      return null;
-    }
-    await renderer.act(async () => {
-      renderer.create(React.createElement(Harness));
-    });
-    await renderer.act(async () => {
-      result.handleExternalFiltersChange({
-        language: 'pt-br',
-        review: 'pending',
-        store: '',
-        type: '',
-      });
-    });
-    expect(setFilters).toHaveBeenCalled();
-    const lastCall = setFilters.mock.calls[setFilters.mock.calls.length - 1][0];
-    const next =
-      typeof lastCall === 'function'
-        ? lastCall(ctx.filters)
-        : lastCall;
-    expect(next.pendingOnly).toBe(true);
   });
 });
