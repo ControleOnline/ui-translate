@@ -104,16 +104,15 @@ export default function TranslationsReviewPage() {
   );
 
   const hasMainFallback = useMemo(() => {
-    const mainCompanyId = summary?.mainCompany?.id || mainCompany?.id;
+    const mainCompanyId = mainCompany?.id;
     return Boolean(
       currentCompanyId &&
       mainCompanyId &&
       String(currentCompanyId) !== String(mainCompanyId),
     );
-  }, [currentCompanyId, mainCompany?.id, summary?.mainCompany?.id]);
+  }, [currentCompanyId, mainCompany?.id]);
 
   const mainCompanyLabel =
-    summary?.mainCompany?.name ||
     mainCompany?.name ||
     mainCompany?.alias ||
     'empresa principal';
@@ -181,8 +180,7 @@ export default function TranslationsReviewPage() {
     ],
   );
 
-  const mainCompanyId = summary?.mainCompany?.id || mainCompany?.id;
-  const mainCompany = summary?.mainCompany || mainCompany;
+  const mainCompanyId = mainCompany?.id;
 
   const {
     loadLanguages,
