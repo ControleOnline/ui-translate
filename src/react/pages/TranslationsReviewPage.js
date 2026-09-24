@@ -41,14 +41,14 @@ const {
 export default function TranslationsReviewPage() {
   const peopleStore = useStore('people');
   const themeStore = useStore('theme');
-  const {currentCompany, mainCompany} = peopleStore.getters;
+  const {currentCompany, defaultCompany} = peopleStore.getters;
   const {colors: themeColors} = themeStore.getters;
   const {showError, showSuccess} = useToastMessage();
 
   const currentCompanyId = currentCompany?.id;
   const resolvedLanguage = useMemo(
-    () => getConfigLanguage({currentCompany, mainCompany}),
-    [currentCompany, mainCompany],
+    () => getConfigLanguage({currentCompany, defaultCompany}),
+    [currentCompany, defaultCompany],
   );
   const syncedCompanyIdRef = useRef(currentCompanyId || null);
   const lastSyncedLanguageRef = useRef(resolvedLanguage);
@@ -104,17 +104,18 @@ export default function TranslationsReviewPage() {
   );
 
   const hasMainFallback = useMemo(() => {
-    const mainCompanyId = mainCompany?.id;
+    const mainCompanyId = summary?.mainCompany?.id || defaultCompany?.id;
     return Boolean(
       currentCompanyId &&
       mainCompanyId &&
       String(currentCompanyId) !== String(mainCompanyId),
     );
-  }, [currentCompanyId, mainCompany?.id]);
+  }, [currentCompanyId, defaultCompany?.id, summary?.mainCompany?.id]);
 
   const mainCompanyLabel =
-    mainCompany?.name ||
-    mainCompany?.alias ||
+    summary?.mainCompany?.name ||
+    defaultCompany?.name ||
+    defaultCompany?.alias ||
     'empresa principal';
   const languageFilterOptions = useMemo(
     () =>
@@ -180,7 +181,8 @@ export default function TranslationsReviewPage() {
     ],
   );
 
-  const mainCompanyId = mainCompany?.id;
+  const mainCompanyId = summary?.mainCompany?.id || defaultCompany?.id;
+  const mainCompany = summary?.mainCompany || defaultCompany;
 
   const {
     loadLanguages,

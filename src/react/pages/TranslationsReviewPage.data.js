@@ -216,11 +216,6 @@ const buildOverviewFromTranslateCollections = ({
   };
 };
 
-const shouldPreferCollectionOverview = ({ currentCompanyId, mainCompanyId }) =>
-  currentCompanyId != null
-  && mainCompanyId != null
-  && String(currentCompanyId) !== String(mainCompanyId);
-
 const isNotFoundError = error =>
   Number(error?.status || error?.code) === 404;
 
@@ -229,5 +224,4 @@ module.exports = {
   isNotFoundError,
   normalizeCollectionItems,
   normalizeCollectionTotalItems,
-  shouldPreferCollectionOverview,
 };

@@ -7,7 +7,6 @@ const {
   isNotFoundError,
   normalizeCollectionItems,
   normalizeCollectionTotalItems,
-  shouldPreferCollectionOverview,
 } = require('./TranslationsReviewPage.data');
 
 export function useTranslationsReviewOperations(ctx) {
@@ -136,19 +135,8 @@ export function useTranslationsReviewOperations(ctx) {
       });
     };
     try {
-      const preferCollection =
-        overviewLoadModeRef.current === 'collection'
-        || shouldPreferCollectionOverview({
-          currentCompanyId,
-          mainCompanyId: resolvedMainCompanyId,
-        });
-
-      if (preferCollection) {
-        overviewLoadModeRef.current = 'collection';
-      }
-
       const response =
-        preferCollection
+        overviewLoadModeRef.current === 'collection'
           ? await loadOverviewFromCollections()
           : await api
               .fetch('/translates/overview', {
