@@ -16,12 +16,12 @@ export default function TranslationReviewRow({
 }) {
   if (!row) return null;
 
-  const isFallbackOnly = !row.hasOverride;
+  const isFallbackOnly = Boolean(hasMainFallback) && !row.hasOverride;
   const footerHint = isFallbackOnly
     ? row.mainRevised
-      ? `Fallback da ${mainCompanyLabel} ja revisado manualmente.`
-      : `Fallback da ${mainCompanyLabel} ainda pendente na empresa principal.`
-    : row.companyRevised
+      ? `Herdada da ${mainCompanyLabel}. Revisada na empresa principal.`
+      : `Herdada da ${mainCompanyLabel}. Pendente de revisão na empresa principal.`
+    : !row.pendingReview
       ? 'Entrada revisada manualmente nesta empresa.'
       : 'Entrada criada automaticamente pelo front nesta empresa.';
   const buttonLabel = row.pendingReview
@@ -54,7 +54,7 @@ export default function TranslationReviewRow({
           </View>
           {isFallbackOnly ? (
             <View style={[styles.badge, styles.badgeFallback]}>
-              <Text style={styles.badgeTextFallback}>Fallback</Text>
+              <Text style={styles.badgeTextFallback}>Herdada</Text>
             </View>
           ) : null}
         </View>
@@ -76,7 +76,7 @@ export default function TranslationReviewRow({
 
       <View style={styles.editorCard}>
         <Text style={styles.referenceLabel}>
-          {isFallbackOnly ? 'Traducao da empresa ativa' : 'Sobrescrita da empresa ativa'}
+          {hasMainFallback && row.hasOverride ? 'Sobrescrita da empresa ativa' : 'Traducao da empresa ativa'}
         </Text>
         <TextInput
           multiline
