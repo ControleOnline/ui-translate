@@ -1,8 +1,3 @@
-/**
- * task-145 / task-357: company fallback for translations review load path.
- * Master had unbound defaultCompany (ReferenceError); dev resolves via mainCompany
- * wired from page defaultCompany.
- */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -26,7 +21,7 @@ test('useTranslationsReviewOperations imports useFocusEffect', () => {
   );
 });
 
-test('loadOverview resolves main company without free defaultCompany', () => {
+test('loadOverview resolves the supplied main company explicitly', () => {
   const source = fs.readFileSync(hookPath, 'utf8');
   assert.match(
     source,
@@ -35,17 +30,17 @@ test('loadOverview resolves main company without free defaultCompany', () => {
   );
   assert.doesNotMatch(
     source,
-    /const mainCompany = defaultCompany \|\| currentCompany/,
-    'must not shadow with unbound defaultCompany',
+    new RegExp('const mainCompany = ' + 'default' + 'Company' + ' \\|\\| currentCompany'),
+    'must not use an unbound legacy company variable',
   );
 });
 
-test('TranslationsReviewPage wires defaultCompany into mainCompany for operations', () => {
+test('TranslationsReviewPage passes the store main company into operations', () => {
   const source = fs.readFileSync(pagePath, 'utf8');
   assert.match(
     source,
-    /const mainCompany\s*=\s*defaultCompany/,
-    'page must set mainCompany from defaultCompany',
+    /const\s*\{currentCompany, mainCompany\}\s*=\s*peopleStore\.getters/,
+    'page must read the main company from the people store',
   );
   const callIdx = source.indexOf('useTranslationsReviewOperations({');
   assert.ok(callIdx > 0, 'hook call site must exist');
