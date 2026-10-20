@@ -4,6 +4,7 @@ const {test} = global
 const {
   buildOverviewFromTranslateCollections,
   isNotFoundError,
+  shouldPreferCollectionOverview,
 } = require('../../../react/pages/TranslationsReviewPage.data')
 
 test('builds overview rows with fallback and company override data', () => {
@@ -100,4 +101,34 @@ test('detects 404 errors for the overview fallback path', () => {
   assert.equal(isNotFoundError({status: 404}), true)
   assert.equal(isNotFoundError({code: 404}), true)
   assert.equal(isNotFoundError({status: 500}), false)
+})
+
+test('prefers collection overview when reviewing a company with main-company fallbacks', () => {
+  assert.equal(
+    shouldPreferCollectionOverview({ currentCompanyId: 5, mainCompanyId: 1 }),
+    true,
+  )
+  assert.equal(
+    shouldPreferCollectionOverview({ currentCompanyId: '5', mainCompanyId: '1' }),
+    true,
+  )
+})
+
+test('keeps overview endpoint for the main-company path', () => {
+  assert.equal(
+    shouldPreferCollectionOverview({ currentCompanyId: 1, mainCompanyId: 1 }),
+    false,
+  )
+  assert.equal(
+    shouldPreferCollectionOverview({ currentCompanyId: '1', mainCompanyId: '1' }),
+    false,
+  )
+  assert.equal(
+    shouldPreferCollectionOverview({ currentCompanyId: 1, mainCompanyId: null }),
+    false,
+  )
+  assert.equal(
+    shouldPreferCollectionOverview({ currentCompanyId: null, mainCompanyId: 1 }),
+    false,
+  )
 })

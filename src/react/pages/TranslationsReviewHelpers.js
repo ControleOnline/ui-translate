@@ -24,10 +24,10 @@ export const getStoredJson = storageKey => {
   }
 };
 
-export const getConfigLanguage = ({ currentCompany, defaultCompany } = {}) =>
+export const getConfigLanguage = ({ currentCompany, mainCompany } = {}) =>
   resolveConfiguredLanguage({
     currentCompany,
-    defaultCompany,
+    mainCompany,
     currentConfig: getStoredJson('config'),
     sessionData: getStoredJson('session'),
   });

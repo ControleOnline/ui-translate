@@ -210,7 +210,7 @@ test.describe('translations review smoke', () => {
 
     expect(
       runtimeErrors.filter(message =>
-        /ReferenceError|Can't find variable|defaultCompany|handleExternalFiltersChange/.test(message),
+        /ReferenceError|Can't find variable|mainCompany|handleExternalFiltersChange/.test(message),
       ),
     ).toEqual([]);
     expect(overviewRequests).toBeGreaterThanOrEqual(1);
