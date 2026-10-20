@@ -124,22 +124,6 @@ export default function TranslationsReviewPage() {
       })),
     [languageOptions],
   );
-  const storeFilterOptions = useMemo(
-    () =>
-      storeOptions.map(store => ({
-        value: store,
-        label: store,
-      })),
-    [storeOptions],
-  );
-  const typeFilterOptions = useMemo(
-    () =>
-      typeOptions.map(type => ({
-        value: type,
-        label: type,
-      })),
-    [typeOptions],
-  );
   const reviewFilterOptions = useMemo(
     () => [
       {value: 'all', label: 'Todas as traduções'},
@@ -167,16 +151,16 @@ export default function TranslationsReviewPage() {
       const fieldName = column?.name || column?.key;
       if (fieldName === 'language') return languageFilterOptions;
       if (fieldName === 'review') return reviewFilterOptions;
-      if (fieldName === 'store') return storeFilterOptions;
-      if (fieldName === 'type') return typeFilterOptions;
+      if (fieldName === 'store') return storeOptions;
+      if (fieldName === 'type') return typeOptions;
 
       return [];
     },
     [
       languageFilterOptions,
       reviewFilterOptions,
-      storeFilterOptions,
-      typeFilterOptions,
+      storeOptions,
+      typeOptions,
     ],
   );
 
@@ -186,6 +170,7 @@ export default function TranslationsReviewPage() {
     loadLanguages,
     loadOverview,
     onRefresh,
+    handleExternalFiltersChange,
     handleDraftChange,
     handleSave,
     clearFilters,
@@ -267,8 +252,9 @@ export default function TranslationsReviewPage() {
           <Text style={styles.heroEyebrow}>TRADUÇÕES</Text>
           <Text style={styles.heroTitle}>Revisão de textos</Text>
           <Text style={styles.heroText}>
-            Revise o que entrou automaticamente, compare com a empresa principal
-            e grave a sobrescrita da empresa ativa quando precisar.
+            {hasMainFallback
+              ? 'Revise os textos, compare com a empresa principal e personalize a tradução desta empresa quando precisar.'
+              : 'Revise os textos cadastrados para esta empresa.'}
           </Text>
         </View>
 
@@ -284,11 +270,13 @@ export default function TranslationsReviewPage() {
             value={summary?.overrides}
             accent="#10B981"
           />
-          <SummaryCard
-            label="Fallbacks"
-            value={summary?.fallbacks}
-            accent="#e67e22"
-          />
+          {hasMainFallback ? (
+            <SummaryCard
+              label="Herdadas"
+              value={summary?.fallbacks}
+              accent="#e67e22"
+            />
+          ) : null}
         </View>
 
         <View style={[styles.filtersCard, shadowStyle]}>
@@ -326,6 +314,8 @@ export default function TranslationsReviewPage() {
             data={items.map(row => ({...row, id: row.rowId}))}
             columns={TRANSLATE_REVIEW_COLUMNS}
             initialViewMode="cards"
+            paginationMode="pages"
+            pageSize={20}
             forceCardsOnCompact
             showToolbar
             showRowActions={false}
