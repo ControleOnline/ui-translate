@@ -7,6 +7,7 @@ const {
   isNotFoundError,
   normalizeCollectionItems,
   normalizeCollectionTotalItems,
+  shouldPreferCollectionOverview,
 } = require('./TranslationsReviewPage.data');
 
 export function useTranslationsReviewOperations(ctx) {
@@ -66,7 +67,8 @@ export function useTranslationsReviewOperations(ctx) {
 
   const loadOverview = useCallback(async () => {
     const activeLanguage = filters.language || resolvedLanguage;
-    const resolvedMainCompany = mainCompany || currentCompany;
+    // mainCompany and currentCompany are independent identities (app-community#823): no fallback.
+    const resolvedMainCompany = mainCompany;
     const resolvedMainCompanyId = mainCompanyId || resolvedMainCompany?.id;
 
     if (!currentCompanyId || !activeLanguage) {
@@ -135,8 +137,19 @@ export function useTranslationsReviewOperations(ctx) {
       });
     };
     try {
-      const response =
+      const preferCollection =
         overviewLoadModeRef.current === 'collection'
+        || shouldPreferCollectionOverview({
+          currentCompanyId,
+          mainCompanyId: resolvedMainCompanyId,
+        });
+
+      if (preferCollection) {
+        overviewLoadModeRef.current = 'collection';
+      }
+
+      const response =
+        preferCollection
           ? await loadOverviewFromCollections()
           : await api
               .fetch('/translates/overview', {
