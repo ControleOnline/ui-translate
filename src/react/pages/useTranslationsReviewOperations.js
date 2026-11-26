@@ -67,7 +67,8 @@ export function useTranslationsReviewOperations(ctx) {
 
   const loadOverview = useCallback(async () => {
     const activeLanguage = filters.language || resolvedLanguage;
-    const resolvedMainCompany = mainCompany || currentCompany;
+    // mainCompany and currentCompany are independent identities (app-community#823): no fallback.
+    const resolvedMainCompany = mainCompany;
     const resolvedMainCompanyId = mainCompanyId || resolvedMainCompany?.id;
 
     if (!currentCompanyId || !activeLanguage) {
